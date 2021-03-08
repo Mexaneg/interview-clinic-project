@@ -5,11 +5,16 @@ import io.ktor.features.*
 import io.ktor.jackson.*
 import com.fasterxml.jackson.databind.*
 import io.ktor.application.*
-import io.ktor.response.*
+import net.project.clinic.interview.application.database.DatabaseFactory
+import net.project.clinic.interview.application.repo.ExaminationRepo
+import net.project.clinic.interview.application.repo.ClinicRepo
+import net.project.clinic.interview.application.repo.PriceRepo
+import net.project.clinic.interview.application.routing.examinationRout
+import net.project.clinic.interview.application.routing.clinicRout
+import net.project.clinic.interview.application.routing.priceRout
 
 fun main(args: Array<String>): Unit =
         io.ktor.server.netty.EngineMain.main(args)
-
 
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
@@ -33,14 +38,11 @@ fun Application.module(testing: Boolean = false) {
             minimumSize(1024) // condition
         }
     }
-    routing {
-        get("/") {
-            call.respondText("Hello World!")
-        }
-    }
-    routing {
-        get("/json/jackson") {
-            call.respond(mapOf("hello" to "world"))
-        }
+
+    DatabaseFactory.init()
+    install(Routing) {
+        clinicRout(ClinicRepo())
+        examinationRout(ExaminationRepo())
+        priceRout(PriceRepo())
     }
 }
