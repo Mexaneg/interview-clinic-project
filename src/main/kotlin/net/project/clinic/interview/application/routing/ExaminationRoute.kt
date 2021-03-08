@@ -12,7 +12,6 @@ import net.project.clinic.interview.application.database.PricingTable
 import net.project.clinic.interview.application.dto.ExaminationRequestDTO
 import net.project.clinic.interview.application.dto.PriceResponseDTO
 import net.project.clinic.interview.application.repo.ExaminationRepo
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -41,6 +40,7 @@ fun Route.examinationRout(examinationRepo: ExaminationRepo) {
             }
             call.respond(transaction { examination.prices.map { it.clinic.name to it.price } })
         }
+
         get("/{examinationId}/clinic/{clinicId}") {
             val clinicId = call.parameters["clinicId"].chekId(Clinic.CLINIC_ENTITY)
             val examinationId = call.parameters["examinationId"].chekId(Examination.EXAMINATION_ENTITY)

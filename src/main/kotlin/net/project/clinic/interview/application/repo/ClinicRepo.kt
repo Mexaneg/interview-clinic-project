@@ -1,12 +1,8 @@
 package net.project.clinic.interview.application.repo
 
 import net.project.clinic.interview.application.database.ClinicTable
-import net.project.clinic.interview.application.database.ExaminationTable
 import net.project.clinic.interview.application.dto.ClinicRequestDTO
 import net.project.clinic.interview.application.dto.ClinicResponseDTO
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -41,17 +37,18 @@ class ClinicRepo {
         }
     }
 
-    fun delete(id:Int){
+    fun delete(id: Int) {
         transaction {
             addLogger(StdOutSqlLogger)
             ClinicTable.deleteWhere { ClinicTable.id eq id }
         }
     }
 
-    fun update(id: Int, clinicResponseDTO: ClinicRequestDTO){
+    fun update(id: Int, clinicResponseDTO: ClinicRequestDTO) {
         transaction {
             addLogger(StdOutSqlLogger)
-            ClinicTable.update { ClinicTable.id eq id
+            ClinicTable.update {
+                ClinicTable.id eq id
                 it[name] = clinicResponseDTO.name
                 it[email] = clinicResponseDTO.email
                 it[phoneNumber] = clinicResponseDTO.phoneNumber
@@ -62,6 +59,13 @@ class ClinicRepo {
     }
 
     private fun ResultRow.toClinic(): ClinicResponseDTO {
-        return ClinicResponseDTO(this[ClinicTable.id] , this[ClinicTable.name], this[ClinicTable.email], this[ClinicTable.phoneNumber], this[ClinicTable.city], this[ClinicTable.address])
+        return ClinicResponseDTO(
+            this[ClinicTable.id],
+            this[ClinicTable.name],
+            this[ClinicTable.email],
+            this[ClinicTable.phoneNumber],
+            this[ClinicTable.city],
+            this[ClinicTable.address]
+        )
     }
 }

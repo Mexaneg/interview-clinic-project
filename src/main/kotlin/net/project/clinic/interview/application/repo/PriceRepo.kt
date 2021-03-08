@@ -5,7 +5,6 @@ import net.project.clinic.interview.application.database.PricingTable
 import net.project.clinic.interview.application.dto.PriceDTO
 import net.project.clinic.interview.application.dto.PriceResponseDTO
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class PriceRepo {

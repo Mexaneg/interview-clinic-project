@@ -9,5 +9,4 @@ data class ClinicResponseDTO(
     val phoneNumber: String,
     val city: String,
     val address: String,
-    //val pricing: Map<UUID, Long>
 )

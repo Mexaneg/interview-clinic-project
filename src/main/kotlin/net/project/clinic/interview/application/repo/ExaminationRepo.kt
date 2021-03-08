@@ -3,9 +3,6 @@ package net.project.clinic.interview.application.repo
 import net.project.clinic.interview.application.database.ExaminationTable
 import net.project.clinic.interview.application.dto.ExaminationRequestDTO
 import net.project.clinic.interview.application.dto.ExaminationResponseDTO
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -39,17 +36,18 @@ class ExaminationRepo {
         }
     }
 
-    fun delete(id:Int){
+    fun delete(id: Int) {
         transaction {
             addLogger(StdOutSqlLogger)
             ExaminationTable.deleteWhere { ExaminationTable.id eq id }
         }
     }
 
-    fun update(id: Int, examinationRequestDTO: ExaminationRequestDTO){
+    fun update(id: Int, examinationRequestDTO: ExaminationRequestDTO) {
         transaction {
             addLogger(StdOutSqlLogger)
-            ExaminationTable.update { ExaminationTable.id eq id
+            ExaminationTable.update {
+                ExaminationTable.id eq id
                 it[title] = examinationRequestDTO.title
                 it[description] = examinationRequestDTO.description
             }
@@ -57,6 +55,10 @@ class ExaminationRepo {
     }
 
     private fun ResultRow.toExamination(): ExaminationResponseDTO {
-        return ExaminationResponseDTO(this[ExaminationTable.id].value, this[ExaminationTable.title], this[ExaminationTable.description])
+        return ExaminationResponseDTO(
+            this[ExaminationTable.id].value,
+            this[ExaminationTable.title],
+            this[ExaminationTable.description]
+        )
     }
 }
