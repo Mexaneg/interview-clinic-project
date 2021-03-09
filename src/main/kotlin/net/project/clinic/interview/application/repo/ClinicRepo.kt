@@ -1,6 +1,7 @@
 package net.project.clinic.interview.application.repo
 
 import net.project.clinic.interview.application.database.ClinicTable
+import net.project.clinic.interview.application.database.PricingTable
 import net.project.clinic.interview.application.dto.ClinicRequestDTO
 import net.project.clinic.interview.application.dto.ClinicResponseDTO
 import org.jetbrains.exposed.sql.*
@@ -40,6 +41,7 @@ class ClinicRepo {
     fun delete(id: Int) {
         transaction {
             addLogger(StdOutSqlLogger)
+            PricingTable.deleteWhere { PricingTable.clinic eq id }
             ClinicTable.deleteWhere { ClinicTable.id eq id }
         }
     }
@@ -60,7 +62,7 @@ class ClinicRepo {
 
     private fun ResultRow.toClinic(): ClinicResponseDTO {
         return ClinicResponseDTO(
-            this[ClinicTable.id],
+            this[ClinicTable.id].value,
             this[ClinicTable.name],
             this[ClinicTable.email],
             this[ClinicTable.phoneNumber],

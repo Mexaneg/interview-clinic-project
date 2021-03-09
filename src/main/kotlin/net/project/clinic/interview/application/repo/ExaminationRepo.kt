@@ -1,6 +1,7 @@
 package net.project.clinic.interview.application.repo
 
 import net.project.clinic.interview.application.database.ExaminationTable
+import net.project.clinic.interview.application.database.PricingTable
 import net.project.clinic.interview.application.dto.ExaminationRequestDTO
 import net.project.clinic.interview.application.dto.ExaminationResponseDTO
 import org.jetbrains.exposed.sql.*
@@ -39,6 +40,7 @@ class ExaminationRepo {
     fun delete(id: Int) {
         transaction {
             addLogger(StdOutSqlLogger)
+            PricingTable.deleteWhere { PricingTable.examination eq id }
             ExaminationTable.deleteWhere { ExaminationTable.id eq id }
         }
     }
