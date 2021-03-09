@@ -18,7 +18,7 @@ fun main(args: Array<String>): Unit =
 
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
-fun Application.module(testing: Boolean = false) {
+fun Application.module(testing: Boolean = false, port: Int = 5432) {
     install(DataConversion)
 
     install(ContentNegotiation) {
@@ -40,8 +40,11 @@ fun Application.module(testing: Boolean = false) {
             minimumSize(1024) // condition
         }
     }
-
-    DatabaseFactory.init()
+    if (testing) {
+        DatabaseFactory.init(port, "/testHikari.properties")
+    }
+    else
+        DatabaseFactory.init(port, "/hikari.properties")
     install(Routing) {
         clinicRout(ClinicRepo())
         examinationRout(ExaminationRepo())

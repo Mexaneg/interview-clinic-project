@@ -7,15 +7,13 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object DatabaseFactory {
-    fun init() {
-        Database.connect(hikari())
+    fun init(port:Int, propertiesFilePath:String) {
+        val config = HikariConfig(propertiesFilePath)
+        config.addDataSourceProperty("portNumber",port)
+        Database.connect(HikariDataSource(config))
         transaction {
             SchemaUtils.create(ClinicTable, ExaminationTable, PricingTable)
         }
     }
 
-    private fun hikari(): HikariDataSource {
-        val config = HikariConfig("/hikari.properties")
-        return HikariDataSource(config)
-    }
 }
