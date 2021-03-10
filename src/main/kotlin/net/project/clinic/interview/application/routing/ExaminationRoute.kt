@@ -68,13 +68,13 @@ fun Route.examinationRout(examinationRepo: ExaminationRepo) {
             val examinationId = call.parameters["examinationId"].chekId(Examination.EXAMINATION_ENTITY)
             val receivedExamination = call.receive(ExaminationRequestDTO::class)
             examinationRepo.update(examinationId, receivedExamination)
-            call.respond("Clinic id = $examinationId was updated")
+            call.respond(Examination.EXAMINATION_UPDATED(examinationId))
         }
 
         post("/create") {
             val receivedExamination = call.receive(ExaminationRequestDTO::class)
             examinationRepo.create(receivedExamination)
-            call.respond("Examination was created")
+            call.respond(Examination.EXAMINATION_CREATED)
         }
     }
 }
