@@ -17,6 +17,7 @@ object DatabaseFactory {
     fun getHikari(port: Int, propertiesFilePath: String): HikariDataSource {
         val config = HikariConfig(propertiesFilePath)
         config.addDataSourceProperty("portNumber", port)
+        config.validate()
         return HikariDataSource(config)
     }
 

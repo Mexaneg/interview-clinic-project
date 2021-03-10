@@ -24,10 +24,14 @@ class ApplicationTest {
     companion object {
         class AppPostgreSQLContainer : PostgreSQLContainer<AppPostgreSQLContainer>("postgres:12.6")
 
-        val postgresContainer = AppPostgreSQLContainer()
+        var postgresContainer:AppPostgreSQLContainer = AppPostgreSQLContainer()
 
-        init {
-            postgresContainer.addParameter("PoolSize","100")
+
+        fun initContainer(){
+            if (postgresContainer.isRunning){
+                postgresContainer.stop()
+            }
+            postgresContainer = AppPostgreSQLContainer()
             postgresContainer.start()
             Database.connect(DatabaseFactory.getHikari(postgresContainer.firstMappedPort, "/testHikari.properties"))
         }
@@ -46,14 +50,13 @@ class ApplicationTest {
 
     @BeforeTest
     fun init() {
+        initContainer()
         transaction {
-            SchemaUtils.drop(ClinicTable, ExaminationTable, PricingTable)
-        }
-        transaction {
+            //SchemaUtils.drop(ClinicTable, ExaminationTable, PricingTable)
             SchemaUtils.create(ClinicTable, ExaminationTable, PricingTable)
         }
-        for (i in 1..5) {
-            transaction {
+        transaction {
+            for (i in 1..5) {
                 ClinicTable.insert {
                     it[address] = clinicAddress(i)
                     it[city] = clinicCity(i)
@@ -63,15 +66,14 @@ class ApplicationTest {
                 }
             }
         }
-        for (i in 1..5) {
-            transaction {
+        transaction {
+            for (i in 1..5) {
                 ExaminationTable.insert {
                     it[description] = examinationDescription(i)
                     it[title] = examinationTitle(i)
                 }
             }
         }
-
         val clinicRecord = transaction { Clinic.findById(1) }
         val examinationRecord = transaction { Examination.findById(1) }
         transaction {
@@ -82,6 +84,7 @@ class ApplicationTest {
             }
         }
     }
+
 
     @Test
     fun testGetClinics() {
@@ -213,9 +216,9 @@ class ApplicationTest {
     }
 
     @Test
-    fun testGetExaminationClinics() {
+    fun testGetExaminationPrices() {
         withTestApplication({ module(testing = true, postgresContainer.firstMappedPort) }) {
-            val response = handleRequest(HttpMethod.Get, "/examination/1/clinics") {
+            val response = handleRequest(HttpMethod.Get, "/examination/1/prices") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             }
             assertEquals(HttpStatusCode.OK, response.response.status())
@@ -280,6 +283,47 @@ class ApplicationTest {
             assertEquals(response.response.content, Examination.EXAMINATION_CREATED)
             assertEquals(transaction { Examination[6].description }, examinationDescription(333))
 
+        }
+    }
+
+    @Test
+    fun testGetPrices() {
+        withTestApplication({ module(testing = true, postgresContainer.firstMappedPort) }) {
+            val response = handleRequest(HttpMethod.Get, "/price/") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            }
+            assertEquals(HttpStatusCode.OK, response.response.status())
+            val size = mapper.readTree(response.response.content).size()
+            assertEquals(1, size)
+        }
+    }
+
+    @Test
+    fun testUpdatePrice() {
+        withTestApplication({ module(testing = true, postgresContainer.firstMappedPort) }) {
+            val newPrice = PriceRequestDTO(2,2,2000)
+            val response = handleRequest(HttpMethod.Put, "/price/1") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(mapper.writeValueAsString(newPrice))
+            }
+            assertEquals(HttpStatusCode.OK, response.response.status())
+            assertEquals(response.response.content, Price.PRICE_UPDATED(1))
+            assertEquals(transaction { Price[1].clinic.id.value }, 2)
+
+        }
+    }
+
+    @Test
+    fun testCreatePrice() {
+        withTestApplication({ module(testing = true, postgresContainer.firstMappedPort) }) {
+            val newPrice = PriceRequestDTO(2,2,2000)
+            val response = handleRequest(HttpMethod.Post, "/price/create") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(mapper.writeValueAsString(newPrice))
+            }
+            assertEquals(HttpStatusCode.OK, response.response.status())
+            assertEquals(response.response.content, Price.PRICE_CREATED)
+            assertEquals(transaction { Price.count()}, 2)
         }
     }
 }
